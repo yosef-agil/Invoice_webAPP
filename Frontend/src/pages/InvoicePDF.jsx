@@ -18,8 +18,7 @@ const InvoicePDF = ({ values }) => (
       <View style={styles.section}>
         <Text style={styles.title}>Invoice</Text>
         <Text style={styles.text}>Customer: {values.customer || "N/A"}</Text>
-        <Text style={styles.text}>Date: {values.date || "dd/mm/yyyy"}</Text>
-        <Text style={styles.text}>Due Date: {values.due_date || "dd/mm/yyyy"}</Text>
+        <Text style={styles.text}>Date: {values.due_date || "dd/mm/yyyy"}</Text>
       </View>
 
       <View style={styles.table}>

@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
+const util = require("util");
 
 const app = express();
 app.use(cors());
@@ -14,6 +15,8 @@ const db = mysql.createConnection({
   password: "",
   database: "invoice_webapp",
 });
+
+const query = util.promisify(db.query).bind(db);
 
 db.connect((err) => {
   if (err) {
@@ -37,23 +40,44 @@ app.get("/paketan", (req, res) => {
   });
 });
 
-// API Endpoint untuk menyimpan invoice ke database
-app.post('/invoice', (req, res) => {
-  const sql = "INSERT INTO invoice (`customer`,`date`,`description`,`due_date`, `price`, `note`) VALUES (?)";
-  console.log(req.body)
-  const vlaues = [
-      req.body.customer,
-      req.body.date,
-      req.body.description,
-      req.body.due_date,
-      req.body.price,
-      req.body.note,
-  ]
-  db.query(sql, [vlaues], (err, result) => {
-      if(err) return res.json(err);
-      return res.json(result);
-  })
-})
+// API Endpoint untuk menyimpan invoice dan items ke database
+app.post("/invoice", async (req, res) => {
+  const { customer, date, due_date, note, items } = req.body; // items adalah array
+
+  try {
+    console.log("Request body:", req.body); // Debugging data yang diterima
+
+    // Mulai transaksi
+    await query("START TRANSACTION");
+
+    // Simpan invoice ke database
+    const result = await query(
+      "INSERT INTO invoice (customer, date, due_date, note) VALUES (?, ?, ?, ?)",
+      [customer, date, due_date, note]
+    );
+
+    const invoiceId = result.insertId;
+
+    // Simpan setiap item ke invoice_items
+    for (const item of items) {
+      console.log("Inserting item:", item); // Debugging data yang akan disimpan
+      await query(
+        "INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)",
+        [invoiceId, item.description, item.price]
+      );
+    }
+
+    // Commit transaksi jika semua sukses
+    await query("COMMIT");
+
+    res.status(201).json({ message: "Invoice created successfully", invoiceId });
+  } catch (error) {
+    console.error("Error processing invoice:", error); // Menampilkan error di terminal
+    await query("ROLLBACK");
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 // Menjalankan server di port 8081

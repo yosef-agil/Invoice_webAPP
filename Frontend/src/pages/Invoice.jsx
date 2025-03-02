@@ -1,20 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import InvoicePDF from "./InvoicePDF";
 
 const Invoice = () => {
 
   const [values, setValues] = useState({
     customer: '',
-    description: '',
+    date: new Date().toISOString().split('T')[0],
     due_date: '',
-    price: '',
     note: '',
-  })
+    items: [], // Tambahkan items ke dalam state
+  });
 
   const navigate = useNavigate();
+  const [items, setItems] = useState([]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,6 +26,44 @@ const Invoice = () => {
     })
     .catch(err => console.log(err))
   }
+
+  // Function to delete and new items button
+  const addItem = () => {
+    setValues(prevValues => ({
+      ...prevValues,
+      items: [...prevValues.items, { description: '', price: '' }]
+    }));
+  };
+
+  const removeItem = (index) => {
+    setValues(prevValues => ({
+      ...prevValues,
+      items: prevValues.items.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    setValues(prevValues => {
+      const newItems = [...prevValues.items];
+      newItems[index][field] = value;
+      return { ...prevValues, items: newItems };
+    });
+  };
+
+  // titik otomatis
+  const formatRupiah = (value) => {
+    // Hanya ambil angka, hapus karakter non-digit
+    let numberString = value.replace(/\D/g, "");
+
+    // Tambahkan titik setiap 3 digit dari belakang
+    return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  // titik di preview
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat("id-ID").format(num.replace(/\./g, ""));
+  };
+
 
   return (
     <div>
@@ -77,26 +114,45 @@ const Invoice = () => {
 
               <div className="invoice-items pt-4">
                 <h2 className="font-semibold pb-4">Invoice Details</h2>
-                <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Description</span>
-                      </div>
-                      
-                      <input type="text" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, description: e.target.value})}
-                      />
+
+                <div className="items-wrap p-4 bg-gray-50 border rounded-md">
+                {values.items.map((item, index) => (
+
+                <div key={index} className="flex gap-4 items-center">
+                  <label className="form-control w-full">
+                        <div className="label">
+                            <span className="label-text">Description</span>
+                        </div>
+                        
+                        <input type="text" placeholder="Type here" value={item.description} className="input input-bordered w-full " 
+                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                        />
                   </label>
 
 
                   <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Package price</span>
-                      </div>
-                      
-                      <input type="number" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, price: e.target.value})}
-                      />
+                        <div className="label">
+                            <span className="label-text">Price</span>
+                        </div>
+                        
+                        <input type="number" placeholder="Type here" value={item.price} className="input input-bordered w-full " 
+                            onChange={(e) => handleItemChange(index, "price", formatRupiah(e.target.value))}
+                        />
                   </label>
+                  <button onClick={() => removeItem(index)} className="btn btn-error btn-sm">X</button>
+                </div>
+
+                ))}
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault(); // Cegah reload halaman
+                      addItem();
+                    }} 
+                    className="btn btn-sm btn-primary mt-2"
+                  >
+                    + Add Item
+                  </button>
+                </div>
               </div>
 
               <div className="notes">
@@ -123,18 +179,11 @@ const Invoice = () => {
             <div className="p-6 border rounded-lg bg-gray-50 shadow">
               <div className="header flex justify-between items-center w-full pb-6">
                 <h2 className="font-semibold text-lg">Invoice Preview</h2>
-                  <PDFDownloadLink document={<InvoicePDF values={values} />} fileName="invoice.pdf">
-                    {({ loading }) => (
-                      <button className="btn btn-primary btn-sm">
-                        {loading ? 'Loading...' : 'Download PDF'}
-                      </button>
-                    )}
-                  </PDFDownloadLink>
               </div>
 
               <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-bold">Invoice</h3>
-                <p className="text-sm text-gray-500">Date: {values.date || "dd/mm/yyyy"}</p>
+                <p className="text-sm text-gray-500">Due date: {values.due_date || "dd/mm/yyyy"}</p>
 
                 <div className="mt-4">
                   <p className="text-md font-semibold">Bill to:</p>
@@ -142,19 +191,29 @@ const Invoice = () => {
                 </div>
 
                 <div className="mt-4">
-                  <p className="text-md font-semibold">Description:</p>
-                  <p className="text-gray-700">{values.description || "Service Description"}</p>
+                  <p className="text-md font-semibold">Invoice Items:</p>
+                  {values.items.length > 0 ? (
+                    <ul className="list-disc pl-5">
+                      {values.items.map((item, index) => (
+                        <li key={index}>
+                          {item.description || "No description"} - Rp{formatNumber(item.price) || "0.00"}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-700">No items added</p>
+                  )}
                 </div>
 
-                <div className="mt-4">
+                {/* <div className="mt-4">
                   <p className="text-md font-semibold">Due Date:</p>
                   <p className="text-gray-700">{values.due_date || "dd/mm/yyyy"}</p>
-                </div>
+                </div> */}
 
-                <div className="mt-4">
+                {/* <div className="mt-4">
                   <p className="text-md font-semibold">Package Price:</p>
                   <p className="text-gray-700">Rp{values.price || "0.00"}</p>
-                </div>
+                </div> */}
 
                 <div className="mt-4">
                   <p className="text-md font-semibold">Notes:</p>
