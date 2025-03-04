@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
+import { Trash2 } from 'lucide-react';
 
 const Invoice = () => {
 
@@ -14,6 +15,12 @@ const Invoice = () => {
 
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
+  const [displayValues, setDisplayValues] = useState({});
+  
+  const subtotal = values.items.reduce((acc, item) => acc + Number(item.price), 0);
+  const discountAmount = (subtotal * (values.discount || 0)) / 100;
+  const total = subtotal - discountAmount;
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,12 +50,31 @@ const Invoice = () => {
   };
 
   const handleItemChange = (index, field, value) => {
-    setValues(prevValues => {
-      const newItems = [...prevValues.items];
-      newItems[index][field] = value;
-      return { ...prevValues, items: newItems };
-    });
+    if (field === "price") {
+        let rawValue = value.replace(/\D/g, ""); // Hanya angka
+        let formattedValue = formatRupiah(rawValue); // Format angka dengan titik
+
+        // Simpan nilai asli ke values
+        setValues(prevValues => {
+            const newItems = [...prevValues.items];
+            newItems[index][field] = rawValue; // Simpan angka mentah ke state
+            return { ...prevValues, items: newItems };
+        });
+
+        // Simpan nilai tampilan di displayValues
+        setDisplayValues(prevDisplay => ({
+            ...prevDisplay,
+            [index]: formattedValue
+        }));
+    } else {
+        setValues(prevValues => {
+            const newItems = [...prevValues.items];
+            newItems[index][field] = value;
+            return { ...prevValues, items: newItems };
+        });
+    }
   };
+
 
   // titik otomatis
   const formatRupiah = (value) => {
@@ -61,7 +87,7 @@ const Invoice = () => {
 
   // titik di preview
   const formatNumber = (num) => {
-    return new Intl.NumberFormat("id-ID").format(num.replace(/\./g, ""));
+    return new Intl.NumberFormat("id-ID").format(num);
   };
 
 
@@ -118,7 +144,7 @@ const Invoice = () => {
                 <div className="items-wrap p-4 bg-gray-50 border rounded-md">
                 {values.items.map((item, index) => (
 
-                <div key={index} className="flex gap-4 items-center">
+                <div key={index} className="flex gap-4 items-end mb-4">
                   <label className="form-control w-full">
                         <div className="label">
                             <span className="label-text">Description</span>
@@ -135,11 +161,11 @@ const Invoice = () => {
                             <span className="label-text">Price</span>
                         </div>
                         
-                        <input type="number" placeholder="Type here" value={item.price} className="input input-bordered w-full " 
-                            onChange={(e) => handleItemChange(index, "price", formatRupiah(e.target.value))}
+                        <input type="text" placeholder="Type here" value={displayValues[index] || item.price} className="input input-bordered w-full " 
+                            onChange={(e) => handleItemChange(index, "price", e.target.value)}
                         />
                   </label>
-                  <button onClick={() => removeItem(index)} className="btn btn-error btn-sm">X</button>
+                  <button onClick={() => removeItem(index)} className="btn btn-error btn-md"><Trash2 size={20} color="#ffffff"/></button>
                 </div>
 
                 ))}
@@ -148,11 +174,23 @@ const Invoice = () => {
                       e.preventDefault(); // Cegah reload halaman
                       addItem();
                     }} 
-                    className="btn btn-sm btn-primary mt-2"
+                    className="btn btn-sm btn-primary"
                   >
-                    + Add Item
+                   Add Item
                   </button>
                 </div>
+              </div>
+
+              <div className="discount">
+                  <label className="form-control w-full">
+                      <div className="label">
+                          <span className="label-text">Discount</span>
+                      </div>
+                      
+                      <input type="number" placeholder="Enter discount (e.g. 10)" value={values.discount} className="input input-bordered w-full " 
+                          onChange={(e) => setValues({ ...values, discount: e.target.value })}
+                      />
+                  </label>
               </div>
 
               <div className="notes">
@@ -190,9 +228,53 @@ const Invoice = () => {
                   <p className="text-gray-700">{values.customer || "Customer Name"}</p>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 overflow-x-auto">
+
                   <p className="text-md font-semibold">Invoice Items:</p>
-                  {values.items.length > 0 ? (
+                  <div className="wrap-table rounded-md overflow-hidden border border-gray-300">
+                    <table className="table-auto rounded-lg w-full">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="w-3/4 px-4 py-2">Items</th>
+                          <th className="w-1/4 px-4 py-2 text-left">Price</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {values.items.length > 0 ? (
+                          values.items.map((item, index) => (
+                            <tr key={index}>
+                              <td className="px-4 py-2">{item.description || "No description"}</td>
+                              <td className="w-1/4 px-4 py-2 text-left whitespace-nowrap">
+                                Rp{formatNumber(item.price) || "0.00"}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="2" className="text-gray-700 text-center py-2">No items added</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="border-t border-gray-300 pt-4">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span className="font-medium">Rp{formatNumber(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-red-500">
+                      <span>Discount ({values.discount || 0}%):</span>
+                      <span>- Rp{formatNumber(discountAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-semibold mt-2">
+                      <span>Total:</span>
+                      <span>Rp{formatNumber(total)}</span>
+                    </div>
+                  </div>
+
+
+                  {/* {values.items.length > 0 ? (
                     <ul className="list-disc pl-5">
                       {values.items.map((item, index) => (
                         <li key={index}>
@@ -202,25 +284,16 @@ const Invoice = () => {
                     </ul>
                   ) : (
                     <p className="text-gray-700">No items added</p>
-                  )}
+                  )} */}
+
                 </div>
-
-                {/* <div className="mt-4">
-                  <p className="text-md font-semibold">Due Date:</p>
-                  <p className="text-gray-700">{values.due_date || "dd/mm/yyyy"}</p>
-                </div> */}
-
-                {/* <div className="mt-4">
-                  <p className="text-md font-semibold">Package Price:</p>
-                  <p className="text-gray-700">Rp{values.price || "0.00"}</p>
-                </div> */}
 
                 <div className="mt-4">
                   <p className="text-md font-semibold">Notes:</p>
                   <p className="text-gray-700 italic">{values.note || "No additional notes"}</p>
                 </div>
+              </div>
             </div>
-          </div>
           </div>
 
         </div>
