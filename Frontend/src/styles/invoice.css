@@ -41,4 +41,9 @@ td{
     gap: 8px;
 }
 
+table, th, td {
+    border-color: #d1d5db !important; /* gray-300 */
+}
+
+
 

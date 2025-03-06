@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { Trash2 } from 'lucide-react';
 
 const Invoice = () => {
@@ -13,26 +14,50 @@ const Invoice = () => {
     items: [], // Tambahkan items ke dalam state
   });
 
+
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupType, setPopupType] = useState(""); // "success" atau "error"
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [displayValues, setDisplayValues] = useState({});
   
   const subtotal = values.items.reduce((acc, item) => acc + Number(item.price), 0);
+  const downpayment = Number(values.downpayment) || 0;
   const discountAmount = (subtotal * (values.discount || 0)) / 100;
-  const total = subtotal - discountAmount;
+  const total = subtotal - downpayment - discountAmount;
   
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:8081/invoice', values)
-    
-    //use navigate in here
-    .then(res => {
+  
+    const invoiceData = {
+      ...values,
+      downpayment: Number(values.downpayment) || 0,
+      discount: values.discount || 0,
+      total: total, // Pastikan total dikirim
+    };
+  
+    axios
+      .post("http://localhost:8081/invoice", invoiceData)
+      .then((res) => {
         console.log(res);
-        navigate('/')
-    })
-    .catch(err => console.log(err))
-  }
+        setPopupMessage("Data berhasil disimpan!");
+        setPopupType("success");
+        setTimeout(() => {
+          setPopupMessage("");
+          navigate("/");
+        }, 2000);
+      })
+      .catch((err) => {
+        console.log(err);
+        setPopupMessage("Gagal menyimpan data!");
+        setPopupType("error");
+        setTimeout(() => {
+          setPopupMessage("");
+        }, 3000);
+      });
+  };
+  
 
   // Function to delete and new items button
   const addItem = () => {
@@ -49,6 +74,7 @@ const Invoice = () => {
     }));
   };
 
+  // when submit the invoice
   const handleItemChange = (index, field, value) => {
     if (field === "price") {
         let rawValue = value.replace(/\D/g, ""); // Hanya angka
@@ -92,10 +118,23 @@ const Invoice = () => {
 
 
   return (
+    
     <div>
+
+      {popupMessage && (
+        <div
+          className={`fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg text-white ${
+            popupType === "success" ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
+          {popupMessage}
+        </div>
+      )}
+
+
       <div className="createNewInvoice items-center border-b justify-between flex px-6 py-4">
         <h2 className="text-lg font-semibold">Create New Invoice</h2>
-        <button className="btn btn-md rounded-full">Cancel</button>
+        {/* <Link to="/" className="btn btn-md">Cancel</Link> */}
       </div>
       <div className="container px-8 py-8">
         <div className="grid grid-cols-2 gap-8">
@@ -174,7 +213,7 @@ const Invoice = () => {
                       e.preventDefault(); // Cegah reload halaman
                       addItem();
                     }} 
-                    className="btn btn-sm btn-primary"
+                    className="btn btn-sm btn-neutral"
                   >
                    Add Item
                   </button>
@@ -191,6 +230,16 @@ const Invoice = () => {
                           onChange={(e) => setValues({ ...values, discount: e.target.value })}
                       />
                   </label>
+
+                  <label className="form-control w-full">
+                      <div className="label">
+                          <span className="label-text">Down Payment</span>
+                      </div>
+                      
+                      <input type="number" placeholder="Enter down payment (e.g. 50.000)" value={values.downpayment} className="input input-bordered w-full " 
+                          onChange={(e) => setValues({ ...values, downpayment: e.target.value })}
+                      />
+                  </label>
               </div>
 
               <div className="notes">
@@ -205,7 +254,7 @@ const Invoice = () => {
                   </label>
               </div>
 
-                <button className="btn btn-md btn-success text-white mt-6">Save</button>
+                <button className="btn btn-md btn-primary text-white mt-6">Save</button>
             </div>
 
             </form>
@@ -231,7 +280,7 @@ const Invoice = () => {
                 <div className="mt-4 overflow-x-auto">
 
                   <p className="text-md font-semibold">Invoice Items:</p>
-                  <div className="wrap-table rounded-md overflow-hidden border border-gray-300">
+                  <div className="wrap-table rounded-md overflow-hidden border border-gray-200">
                     <table className="table-auto rounded-lg w-full">
                       <thead>
                         <tr className="bg-gray-100">
@@ -239,7 +288,7 @@ const Invoice = () => {
                           <th className="w-1/4 px-4 py-2 text-left">Price</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-gray-300">
                         {values.items.length > 0 ? (
                           values.items.map((item, index) => (
                             <tr key={index}>
@@ -258,10 +307,14 @@ const Invoice = () => {
                     </table>
                   </div>
 
-                  <div className="border-t border-gray-300 pt-4">
+                  <div className=" pt-4">
                     <div className="flex justify-between text-sm">
                       <span>Subtotal:</span>
                       <span className="font-medium">Rp{formatNumber(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Down Payment:</span>
+                      <span className="font-medium">Rp{formatNumber(downpayment)}</span>
                     </div>
                     <div className="flex justify-between text-sm text-red-500">
                       <span>Discount ({values.discount || 0}%):</span>

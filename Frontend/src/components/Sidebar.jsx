@@ -7,11 +7,13 @@ const Sidebar = () => {
     <div className="drawer lg:drawer-open ">
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
         <div className="drawer-side">
+
             <ul className="menu border-r text-base-content min-h-full p-4">
             {/* Sidebar content here */}
-            <li>
+            <div className="brand font-bold">
                 <h1 className="text-lg">Invoice App</h1>
-            </li>
+            </div>
+
             <li>
                 <Link to="/"><Home className="w-5 h-5" /> Home</Link>
             </li>
