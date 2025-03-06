@@ -236,7 +236,7 @@ const Invoice = () => {
                           <span className="label-text">Down Payment</span>
                       </div>
                       
-                      <input type="number" placeholder="Enter down payment (e.g. 50.000)" value={values.downpayment} className="input input-bordered w-full " 
+                      <input type="text" placeholder="Enter down payment (e.g. 50.000)" value={values.downpayment} className="input input-bordered w-full " 
                           onChange={(e) => setValues({ ...values, downpayment: e.target.value })}
                       />
                   </label>

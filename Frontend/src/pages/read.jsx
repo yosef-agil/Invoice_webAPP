@@ -70,7 +70,7 @@ function Read() {
                 </div>
 
                 <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-bold">Invoice</h3>
+                <h3 className="text-lg font-bold">INVOICE {invoice?.inv_id}</h3>
                 <p className="text-sm text-gray-500">
                     Due date: {invoice?.due_date ? new Date(invoice.due_date).toLocaleDateString("id-ID") : "N/A"}
                 </p>

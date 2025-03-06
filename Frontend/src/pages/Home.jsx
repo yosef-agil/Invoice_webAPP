@@ -24,26 +24,27 @@ function Home() {
           <table className="table">
             <thead>
             <tr>
-                <th></th>
-                <th>Customer</th>
-                <th>Due date</th>
-                <th>Total</th>
-                <th>Action</th>
+                <th className="htable">ID</th>
+                <th className="htable">Customer</th>
+                <th className="htable">Due Date</th>
+                <th className="htable">Down Payment</th>
+                <th className="htable">Total</th>
+                <th className="htable">Action</th>
             </tr>
             </thead>
 
             <tbody>
                 {data.map((invoice, index) => {
                     return <tr key={index} >
-
-                        <td>{invoice.invoice_id}</td>
+                        <td>{invoice.inv_id}</td>
                         <td>{invoice.customer}</td>
                         <td>{invoice?.due_date ? new Date(invoice.due_date).toLocaleDateString("id-ID") : "N/A"}</td>
+                        <td>Rp {invoice.downpayment?.toLocaleString('id-ID')}</td>
                         <td>Rp {invoice.total?.toLocaleString('id-ID')}</td>
                         <td className='gap-3 flex'>
                             <Link to={`/read/${invoice.id}`} className="btn btn-sm">View</Link>
                             <Link to={`/edit/${invoice.id}`} className='btn btn-sm'>Edit</Link>
-                            <button className="btn btn-error btn-sm">Delete</button>
+                            <button className="btn btn-sm btn-outline btn-error">Delete</button>
                         </td>
 
                     </tr>

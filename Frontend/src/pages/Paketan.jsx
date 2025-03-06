@@ -12,32 +12,36 @@ function Home() {
   }, [])
 
   return (
-    <div className="h-screen p-6 bg-white">
-      <div className="overflow-x-auto">
+    <div>
+      <div className="Header items-center border-b justify-between flex px-6 py-4">
+        <h2 className="text-lg font-semibold">Pricelist</h2>
+      </div>   
+      <div className="container px-8 py-8">
+        <div className="overflow-x-auto border overflow-hidden rounded-lg">
+          <table className="table">
+            <thead>
+              <tr>
+                <th></th>
+                <th className="htable">Package Name</th>
+                <th className="htable">Price</th>
+                <th className="htable">Date Update</th>
+                <th className="htable">Category</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((d, i) => (
+              <tr key={i}>
+                <td>{d.id}</td>
+                <td>{d.package}</td>
+                <td>Rp {d.price.toLocaleString('id-ID')}</td>
+                <td>{d.date}</td>
+                <td>{d.category}</td>
+              </tr>
+              ))}
+            </tbody>
+          </table>
 
-        <table className="table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Package Name</th>
-              <th>Price</th>
-              <th>Date Update</th>
-              <th>Category</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((d, i) => (
-            <tr key={i}>
-              <td>{d.id}</td>
-              <td>{d.package}</td>
-              <td>Rp {d.price.toLocaleString('id-ID')}</td>
-              <td>{d.date}</td>
-              <td>{d.category}</td>
-            </tr>
-            ))}
-          </tbody>
-        </table>
-        
+        </div>
       </div>
     </div>
   );

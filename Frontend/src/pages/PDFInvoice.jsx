@@ -81,6 +81,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F8",
     padding: 30,
   },
+  inv:{
+    display: "flex",
+    gap: 2,
+  },
 });
 
 const PDFInvoice = ({ invoice }) => {
@@ -97,7 +101,11 @@ const PDFInvoice = ({ invoice }) => {
           <View style={styles.header}>
             {/* Use the image from the public folder */}
             <Text style={styles.brand}>Thirtyone Studio</Text>
-            <Text style={styles.headerBrand}>Invoice</Text>
+            <View style={styles.inv}>
+              <Text style={styles.headerBrand}>Invoice</Text>
+              <Text>{invoice?.inv_id || "N/A"}</Text>
+            </View>
+
           </View>
 
           {/* Info Bisnis dan Pelanggan */}

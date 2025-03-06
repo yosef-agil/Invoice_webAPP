@@ -36,9 +36,11 @@ app.get('/invoice', (req, res) => {
   const sql = `
     SELECT 
       invoice.id AS invoice_id,
+      invoice.inv_id,
       invoice.customer,
       invoice.due_date,
       invoice.total,
+      invoice.downpayment,
       invoice_items.id AS item_id,
       invoice_items.description
     FROM invoice
@@ -55,9 +57,11 @@ app.get('/invoice', (req, res) => {
       if (!invoices[row.invoice_id]) {
         invoices[row.invoice_id] = {
           id: row.invoice_id,
+          inv_id: row.inv_id,
           customer: row.customer,
           due_date: row.due_date,
           total: row.total,
+          downpayment: row.downpayment,
           items: []
         };
       }
