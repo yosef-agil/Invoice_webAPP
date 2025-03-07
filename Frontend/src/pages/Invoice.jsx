@@ -99,15 +99,13 @@ const Invoice = () => {
             return { ...prevValues, items: newItems };
         });
     }
-  };
+};
 
 
   // titik otomatis
   const formatRupiah = (value) => {
-    // Hanya ambil angka, hapus karakter non-digit
-    let numberString = value.replace(/\D/g, "");
-
-    // Tambahkan titik setiap 3 digit dari belakang
+    if (!value) return ""; // Jika value undefined atau null, kembalikan string kosong
+    let numberString = value.toString().replace(/\D/g, ""); // Konversi ke string dan hapus non-digit
     return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
@@ -200,7 +198,7 @@ const Invoice = () => {
                             <span className="label-text">Price</span>
                         </div>
                         
-                        <input type="text" placeholder="Type here" value={displayValues[index] || item.price} className="input input-bordered w-full " 
+                        <input type="text" placeholder="Type here" value={item.downpayment} className="input input-bordered w-full " 
                             onChange={(e) => handleItemChange(index, "price", e.target.value)}
                         />
                   </label>
@@ -236,7 +234,7 @@ const Invoice = () => {
                           <span className="label-text">Down Payment</span>
                       </div>
                       
-                      <input type="text" placeholder="Enter down payment (e.g. 50.000)" value={values.downpayment} className="input input-bordered w-full " 
+                      <input type="text" placeholder="Enter down payment (e.g. 50.000)" value={formatRupiah(values.downpayment)} className="input input-bordered w-full " 
                           onChange={(e) => setValues({ ...values, downpayment: e.target.value })}
                       />
                   </label>
