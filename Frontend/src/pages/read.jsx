@@ -68,6 +68,7 @@ function Read() {
                 <div className="header flex justify-between items-center w-full pb-6">
                 <h2 className="font-semibold text-lg">Invoice Preview</h2>
                 </div>
+                
 
                 <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="text-lg font-bold">INVOICE {invoice?.inv_id}</h3>

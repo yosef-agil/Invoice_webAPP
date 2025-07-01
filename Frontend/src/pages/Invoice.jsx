@@ -198,7 +198,7 @@ const Invoice = () => {
                             <span className="label-text">Price</span>
                         </div>
                         
-                        <input type="text" placeholder="Type here" value={item.downpayment} className="input input-bordered w-full " 
+                        <input type="text" placeholder="Type here" value={item.price} className="input input-bordered w-full " 
                             onChange={(e) => handleItemChange(index, "price", e.target.value)}
                         />
                   </label>
@@ -234,8 +234,15 @@ const Invoice = () => {
                           <span className="label-text">Down Payment</span>
                       </div>
                       
-                      <input type="text" placeholder="Enter down payment (e.g. 50.000)" value={formatRupiah(values.downpayment)} className="input input-bordered w-full " 
-                          onChange={(e) => setValues({ ...values, downpayment: e.target.value })}
+                      <input 
+                        type="text" 
+                        placeholder="Enter down payment (e.g. 50.000)" 
+                        value={formatRupiah(values.downpayment)} 
+                        className="input input-bordered w-full" 
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/\D/g, "");
+                          setValues({ ...values, downpayment: rawValue });
+                        }}
                       />
                   </label>
               </div>
