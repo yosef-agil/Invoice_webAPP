@@ -9,11 +9,20 @@ app.use(cors());
 app.use(express.json());
 
 // Koneksi ke Database MySQL
+// const db = mysql.createConnection({
+//   host: "localhost",
+//   user: "root",
+//   password: "",
+//   database: "invoice_webapp",
+// });
+
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "invoice_webapp",
+  host: process.env.MYSQLHOST || 'shortline.proxy.rlwy.net',
+  user: process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQLPASSWORD || 'rnwGJjwhyMdvaMSYBxAuuMzZLhyjiHuZ',
+  database: process.env.MYSQLDATABASE || 'railway',
+  port: process.env.MYSQLPORT || 3306,
+  ssl: { rejectUnauthorized: true } // Penting untuk koneksi aman
 });
 
 const query = util.promisify(db.query).bind(db);
