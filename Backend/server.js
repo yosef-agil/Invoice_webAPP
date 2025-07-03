@@ -16,17 +16,39 @@ app.use(express.json());
 //   database: "invoice_webapp",
 // });
 
+// server.js
+const mysql = require('mysql');
+
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST || 'containers-us-west-101.railway.app',
   user: process.env.MYSQLUSER || 'root',
   password: process.env.MYSQLPASSWORD || 'Jmm0xPCCn@FJIovRVCmavaCTjgsbbRZd',
   database: process.env.MYSQLDATABASE || 'railway',
   port: process.env.MYSQLPORT || 5506,
+  connectTimeout: 60000, // Timeout 60 detik
   ssl: {
-    rejectUnauthorized: false // Ubah ke false untuk development
-  },
-  connectTimeout: 30000 // Naikkan timeout menjadi 30 detik
+    rejectUnauthorized: false // Nonaktifkan untuk sementara
+  }
 });
+
+// Fungsi koneksi dengan retry
+function connectWithRetry(attempt = 1) {
+  db.connect(err => {
+    if (err) {
+      console.error(`Connection attempt ${attempt} failed:`, err.message);
+      if (attempt < 5) {
+        setTimeout(() => connectWithRetry(attempt + 1), 5000);
+      } else {
+        console.error('Giving up after 5 attempts');
+        process.exit(1);
+      }
+    } else {
+      console.log('Successfully connected to database');
+    }
+  });
+}
+
+connectWithRetry();
 
 const query = util.promisify(db.query).bind(db);
 
