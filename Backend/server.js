@@ -90,7 +90,7 @@ app.get('/invoice', (req, res) => {
 import cors from 'cors';
 app.use(cors({
   origin: [
-    'https://backendinv-production.up.railway.app',
+    'https://frontendinv-production.up.railway.app',
     'http://localhost:5173'
   ]
 }));
