@@ -5,7 +5,7 @@ function Home() {
   const [data, setData] = useState([])
 
   useEffect(()=> {
-    fetch('http://localhost:8081/paketan')
+    fetch(`${import.meta.env.VITE_API_URL}/invoice`)
     .then(res => res.json())
     .then(data => setData(data))
     .catch(err => console.log(err));
