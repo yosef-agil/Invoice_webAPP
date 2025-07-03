@@ -17,11 +17,11 @@ app.use(express.json());
 // });
 
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST, // Hapus default value
+  host: process.env.MYSQLHOST || 'containers-us-west-101.railway.app',  // Hapus default value
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT,
+  port: process.env.MYSQLPORT || 5506,
   ssl: { 
     rejectUnauthorized: true,
   },
