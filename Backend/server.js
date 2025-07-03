@@ -17,9 +17,9 @@ app.use(express.json());
 // });
 
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || 'shortline.proxy.rlwy.net',
+  host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
   user: process.env.MYSQLUSER || 'root',
-  password: process.env.MYSQLPASSWORD || 'rnwGJjwhyMdvaMSYBxAuuMzZLhyjiHuZ',
+  password: process.env.MYSQLPASSWORD || 'JmmOxPcCmQFJIovRVCmavaCTjgsbbRZd',
   database: process.env.MYSQLDATABASE || 'railway',
   port: process.env.MYSQLPORT || 3306,
   ssl: { rejectUnauthorized: true } // Penting untuk koneksi aman
@@ -90,7 +90,7 @@ app.get('/invoice', (req, res) => {
 import cors from 'cors';
 app.use(cors({
   origin: [
-    'https://backendinv-production.up.railway.app',
+    'https://frontendinv-production.up.railway.app',
     'http://localhost:5173'
   ]
 }));
