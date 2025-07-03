@@ -17,15 +17,15 @@ app.use(express.json());
 // });
 
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || 'containers-us-west-101.railway.app',  // Hapus default value
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
+  host: process.env.MYSQLHOST || 'containers-us-west-101.railway.app',
+  user: process.env.MYSQLUSER || 'root',
+  password: process.env.MYSQLPASSWORD || 'JmmOxPCCn0FJIovRVCmavaCTjgsbbRZd',
+  database: process.env.MYSQLDATABASE || 'railway',
   port: process.env.MYSQLPORT || 5506,
   ssl: { 
     rejectUnauthorized: true,
   },
-  connectTimeout: 10000
+  connectTimeout: 20000 // Naikkan timeout menjadi 20 detik
 });
 
 const query = util.promisify(db.query).bind(db);
