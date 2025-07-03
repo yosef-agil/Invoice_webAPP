@@ -90,7 +90,7 @@ app.get('/invoice', (req, res) => {
   });
 });
 
-import cors from 'cors';
+const cors = require('cors');
 app.use(cors({
   origin: [
     'https://frontendinv-production.up.railway.app',
