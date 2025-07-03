@@ -38,7 +38,7 @@ const Invoice = () => {
     };
   
     axios
-      .post("${import.meta.env.VITE_API_URL}/test", invoiceData)
+      .post(`${import.meta.env.VITE_API_URL}/invoice`, invoiceData)
       .then((res) => {
         console.log(res);
         setPopupMessage("Data berhasil disimpan!");

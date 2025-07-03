@@ -7,7 +7,7 @@ function Home() {
   const [data, setData] = useState([])
 
   useEffect(()=>{
-      axios.get('${import.meta.env.VITE_API_URL}/test')
+      axios.get(`${import.meta.env.VITE_API_URL}/invoice`)
       .then(res => setData(res.data))
       .catch(err => console.log(err));
   }, [])
