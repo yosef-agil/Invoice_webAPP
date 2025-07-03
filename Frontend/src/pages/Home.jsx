@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 
-const response = await fetch(`${import.meta.env.VITE_API_URL}/api/data`);
-
 function Home() {
 
   const [data, setData] = useState([])
 
   useEffect(()=>{
-      axios.get('http://localhost:8081/invoice')
+      axios.get('${import.meta.env.VITE_API_URL}/test')
       .then(res => setData(res.data))
       .catch(err => console.log(err));
   }, [])

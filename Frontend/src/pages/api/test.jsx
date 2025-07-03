@@ -1,10 +1,7 @@
-import connection from '../../lib/db';
+import axios from 'axios';
 
-export default async function handler(req, res) {
-    try {
-        const [rows] = await connection.query('SELECT NOW() AS currentTime');
-        res.status(200).json({ success: true, time: rows[0].currentTime });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-}
+const API_URL = import.meta.env.VITE_API_URL;
+
+export const getTest = () => {
+  return axios.get(`${API_URL}/test`);
+};
