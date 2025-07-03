@@ -12,7 +12,7 @@ function Read() {
   const [invoice, setInvoice] = useState({});
 
   useEffect(() => {
-    axios.get(`http://localhost:8081/read/${id}`)
+    axios.get(`${import.meta.env.VITE_API_URL}/${id}`)
       .then(res => {
         console.log("API Response:", res.data);
         setInvoice(res.data); // Gunakan res.data langsung karena sudah objek
