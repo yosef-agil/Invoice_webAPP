@@ -17,12 +17,15 @@ app.use(express.json());
 // });
 
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
-  user: process.env.MYSQLUSER || 'root',
-  password: process.env.MYSQLPASSWORD || 'JmmOxPcCmQFJIovRVCmavaCTjgsbbRZd',
-  database: process.env.MYSQLDATABASE || 'railway',
-  port: process.env.MYSQLPORT || 3306,
-  ssl: { rejectUnauthorized: true } // Penting untuk koneksi aman
+  host: process.env.MYSQLHOST, // Hapus default value
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT,
+  ssl: { 
+    rejectUnauthorized: true,
+  },
+  connectTimeout: 10000
 });
 
 const query = util.promisify(db.query).bind(db);
