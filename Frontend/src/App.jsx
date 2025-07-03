@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Invoice from "./pages/Invoice";
 import Paketan from "./pages/Paketan";
-import Settings from "./pages/settings";
+import Settings from "./pages/Pengaturan";
 import Read from "./pages/read";
 import Sidebar from "./components/Sidebar";
 import PDFPreview from "./pages/PDFInvoice";
