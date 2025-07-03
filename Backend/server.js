@@ -19,13 +19,13 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST || 'containers-us-west-101.railway.app',
   user: process.env.MYSQLUSER || 'root',
-  password: process.env.MYSQLPASSWORD || 'JmmOxPCCn0FJIovRVCmavaCTjgsbbRZd',
+  password: process.env.MYSQLPASSWORD || 'Jmm0xPCCn@FJIovRVCmavaCTjgsbbRZd',
   database: process.env.MYSQLDATABASE || 'railway',
   port: process.env.MYSQLPORT || 5506,
-  ssl: { 
-    rejectUnauthorized: true,
+  ssl: {
+    rejectUnauthorized: false // Ubah ke false untuk development
   },
-  connectTimeout: 20000 // Naikkan timeout menjadi 20 detik
+  connectTimeout: 30000 // Naikkan timeout menjadi 30 detik
 });
 
 const query = util.promisify(db.query).bind(db);
