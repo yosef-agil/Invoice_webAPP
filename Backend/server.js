@@ -259,7 +259,7 @@ app.post("/invoice", async (req, res) => {
 
 
 // Server initialization with port handling
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8080;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
