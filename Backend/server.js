@@ -13,9 +13,14 @@ app.use(cors({
   origin: [
     'https://frontendinv-production.up.railway.app',
     'http://localhost:5173'
-  ]
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
-app.use(express.json());
+
+// Handle preflight requests
+app.options('*', cors());
 
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
@@ -29,16 +34,38 @@ const db = mysql.createPool({
   ssl: {
     rejectUnauthorized: false
   },
-  connectTimeout: 10000
+  connectTimeout: 20000, // Tambah timeout menjadi 20 detik
+  // Tambahkan opsi berikut:
+  timezone: 'Z', // Untuk sinkronisasi timezone
+  charset: 'utf8mb4' // Untuk support karakter khusus
 });
 
-// Test koneksi database saat startup
+// Test koneksi saat startup
 db.getConnection((err, connection) => {
   if (err) {
-    console.error('❌ Database connection failed:', err.message);
+    console.error('❌ Database connection failed:', {
+      message: err.message,
+      code: err.code,
+      stack: err.stack
+    });
+    
+    // Coba reconnect setiap 5 detik
+    setTimeout(() => {
+      console.log('Mencoba reconnect ke database...');
+      db.getConnection();
+    }, 5000);
   } else {
     console.log('✅ Successfully connected to database');
     connection.release();
+    
+    // Jalankan query test
+    connection.query('SELECT 1', (err) => {
+      if (err) {
+        console.error('Test query failed:', err);
+      } else {
+        console.log('Database test query berhasil');
+      }
+    });
   }
 });
 
@@ -65,6 +92,15 @@ app.get('/health', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// Tambahkan Middleware untuk Header
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://frontendinv-production.up.railway.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
 });
 
 // API untuk  menampilkan dari Invoice
