@@ -11,12 +11,9 @@ import PDFPreview from "./pages/PDFInvoice";
 function App() {
   return (
     <Router>
-      <div className="flex min-h-screen">
-        {/* Sidebar akan tetap muncul di semua halaman */}
+      <div className="min-h-screen">
         <Sidebar />
-        
-        {/* Konten utama */}
-        <div className="flex-1 lg:ml-64 overflow-auto">
+        <div className="lg:ml-64">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/invoice" element={<Invoice />} />

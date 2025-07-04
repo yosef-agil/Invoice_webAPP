@@ -4,23 +4,23 @@ import { Package2, ReceiptText, Home, Settings } from "lucide-react";
 const Sidebar = () => {
   return (
     <>
-      {/* Mobile toggle button - bagian dari Sidebar */}
+      {/* Mobile toggle button */}
       <div className="lg:hidden fixed top-2 left-2 z-50">
-        <label htmlFor="my-drawer-2" className="btn btn-ghost drawer-button">
+        <label htmlFor="my-drawer" className="btn btn-ghost drawer-button">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
           </svg>
         </label>
       </div>
 
-      {/* Drawer/Sidebar */}
+      {/* Sidebar */}
       <div className="drawer lg:drawer-open">
-        <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
         
-        <div className="drawer-side">
-          <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
+        <div className="drawer-side z-40">
+          <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
           
-          <ul className="menu p-4 w-64 min-h-full bg-base-100 text-base-content border-r">
+          <div className="menu p-4 w-64 min-h-full bg-base-100 text-base-content border-r">
             {/* Sidebar content */}
             <div className="brand mb-4 p-2">
               <h1 className="text-xl font-bold">Invoice App</h1>
@@ -50,7 +50,7 @@ const Sidebar = () => {
                 <span>Settings</span>
               </Link>
             </li>
-          </ul>
+          </div>
         </div>
       </div>
     </>
