@@ -6,9 +6,7 @@ const util = require("util");
 
 const app = express();
 
-// Gunakan PORT yang disediakan Railway atau port acak jika tidak tersedia
-const PORT = process.env.PORT || 8080;
-
+// Enhanced CORS configuration
 app.use(cors({
   origin: [
     'https://frontendinv-production.up.railway.app',
@@ -22,6 +20,18 @@ app.use(cors({
 // Handle preflight requests
 app.options('*', cors());
 
+// Additional headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://frontendinv-production.up.railway.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+app.use(express.json());
+
+// Robust database connection configuration
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -34,52 +44,58 @@ const db = mysql.createPool({
   ssl: {
     rejectUnauthorized: false
   },
-  connectTimeout: 20000, // Tambah timeout menjadi 20 detik
-  // Tambahkan opsi berikut:
-  timezone: 'Z', // Untuk sinkronisasi timezone
-  charset: 'utf8mb4' // Untuk support karakter khusus
+  connectTimeout: 20000,
+  timezone: 'Z',
+  charset: 'utf8mb4',
+  // Additional network configurations
+  socketTimeout: 60000,
+  keepAlive: true,
+  enableKeepAlive: true
 });
 
-// Test koneksi saat startup
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error('❌ Database connection failed:', {
-      message: err.message,
-      code: err.code,
-      stack: err.stack
-    });
+// Database connection with retry mechanism
+function checkDatabaseConnection(retryCount = 0) {
+  db.getConnection((err, connection) => {
+    if (err) {
+      console.error('❌ Database connection failed:', {
+        message: err.message,
+        code: err.code,
+        stack: err.stack
+      });
+      
+      if (retryCount < 5) {
+        const delay = Math.min(5000 * (retryCount + 1), 30000);
+        console.log(`Retrying connection in ${delay/1000} seconds...`);
+        setTimeout(() => checkDatabaseConnection(retryCount + 1), delay);
+      } else {
+        console.error('Failed to connect after 5 attempts');
+      }
+      return;
+    }
+
+    console.log('✅ Database connected successfully');
     
-    // Coba reconnect setiap 5 detik
-    setTimeout(() => {
-      console.log('Mencoba reconnect ke database...');
-      db.getConnection();
-    }, 5000);
-  } else {
-    console.log('✅ Successfully connected to database');
-    connection.release();
-    
-    // Jalankan query test
+    // Test connection with simple query
     connection.query('SELECT 1', (err) => {
+      connection.release();
       if (err) {
         console.error('Test query failed:', err);
       } else {
-        console.log('Database test query berhasil');
+        console.log('Database test successful');
       }
     });
-  }
-});
+  });
+}
+
+// Initial connection check
+checkDatabaseConnection();
 
 const query = util.promisify(db.query).bind(db);
 
-// API Endpoint utama
-app.get("/", (req, res) => {
-  return res.json("FROM BACKEND");
-});
-
-// Tambahkan health check endpoint
+// Health check endpoint
 app.get('/health', async (req, res) => {
   try {
-    await db.promise().query('SELECT 1');
+    await query('SELECT 1');
     res.status(200).json({
       status: 'healthy',
       database: 'connected',
@@ -94,59 +110,70 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Tambahkan Middleware untuk Header
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://frontendinv-production.up.railway.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
+// Main endpoint
+app.get("/", (req, res) => {
+  res.json("Backend service is running");
 });
 
-// API untuk  menampilkan dari Invoice
+// Invoice endpoint with improved error handling
 app.get('/invoice', (req, res) => {
-  const sql = `
-    SELECT 
-      invoice.id AS invoice_id,
-      invoice.inv_id,
-      invoice.customer,
-      invoice.due_date,
-      invoice.total,
-      invoice.downpayment,
-      invoice_items.id AS item_id,
-      invoice_items.description
-    FROM invoice
-    LEFT JOIN invoice_items ON invoice.id = invoice_items.invoice_id
-    ORDER BY invoice.id;
-  `;
+  db.getConnection((connErr, connection) => {
+    if (connErr) {
+      return res.status(503).json({
+        error: 'Database unavailable',
+        message: connErr.message
+      });
+    }
 
-  db.query(sql, (err, results) => {
-    if (err) return res.json({ message: "ERROR", error: err });
+    const sql = `
+      SELECT 
+        invoice.id AS invoice_id,
+        invoice.inv_id,
+        invoice.customer,
+        invoice.due_date,
+        invoice.total,
+        invoice.downpayment,
+        invoice_items.id AS item_id,
+        invoice_items.description
+      FROM invoice
+      LEFT JOIN invoice_items ON invoice.id = invoice_items.invoice_id
+      ORDER BY invoice.id;
+    `;
 
-    // Mengelompokkan invoice dengan items masing-masing
-    const invoices = {};
-    results.forEach(row => {
-      if (!invoices[row.invoice_id]) {
-        invoices[row.invoice_id] = {
-          id: row.invoice_id,
-          inv_id: row.inv_id,
-          customer: row.customer,
-          due_date: row.due_date,
-          total: row.total,
-          downpayment: row.downpayment,
-          items: []
-        };
-      }
-
-      if (row.item_id) { // Hanya tambahkan item jika ada
-        invoices[row.invoice_id].items.push({
-          id: row.item_id,
-          description: row.description
+    connection.query(sql, (queryErr, results) => {
+      connection.release();
+      
+      if (queryErr) {
+        return res.status(500).json({
+          error: 'Database error',
+          message: queryErr.message
         });
       }
-    });
 
-    return res.json(Object.values(invoices)); // Ubah ke array JSON
+      const invoices = {};
+      results.forEach(row => {
+        if (!invoices[row.invoice_id]) {
+          invoices[row.invoice_id] = {
+            id: row.invoice_id,
+            inv_id: row.inv_id,
+            customer: row.customer,
+            due_date: row.due_date,
+            total: row.total,
+            downpayment: row.downpayment,
+            items: []
+          };
+        }
+
+        if (row.item_id) {
+          invoices[row.invoice_id].items.push({
+            id: row.item_id,
+            description: row.description
+          });
+        }
+      });
+
+      res.json(Object.values(invoices));
+    });
   });
 });
 
@@ -231,7 +258,9 @@ app.post("/invoice", async (req, res) => {
 
 
 
-// Hanya satu app.listen() di akhir file
+// Server initialization with port handling
+const PORT = process.env.PORT || 8080;
+
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('MySQL Configuration:', {
@@ -242,13 +271,24 @@ const server = app.listen(PORT, () => {
   });
 });
 
-// Handle error khusus untuk EADDRINUSE
+// Handle port conflicts
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.log(`Port ${PORT} sedang digunakan, mencoba port ${PORT + 1}...`);
-    app.listen(PORT + 1);
+    const newPort = PORT + 1;
+    console.log(`Port ${PORT} in use, trying ${newPort}...`);
+    app.listen(newPort);
   } else {
     console.error('Server error:', error);
     process.exit(1);
   }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    db.end();
+    process.exit(0);
+  });
 });
