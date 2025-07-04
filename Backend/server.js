@@ -6,6 +6,7 @@ const cors = require('cors');
 const util = require("util");
 
 const app = express();
+const PORT = process.env.PORT || 8080; // Pindahkan ke sini
 
 app.use(cors({
   origin: [
@@ -212,8 +213,5 @@ app.post("/invoice", async (req, res) => {
 // app.listen(8081, () => {
 //   console.log("Server is running on port 8081");
 // });
-
-const PORT = process.env.PORT || 8080;
-
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
