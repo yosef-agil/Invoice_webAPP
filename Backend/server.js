@@ -36,23 +36,28 @@ app.use(express.json());
 //   }
 // });
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10,
   ssl: {
     rejectUnauthorized: false
-  }
+  },
+  connectTimeout: 10000 // 10 second timeout
 });
 
-// DEBUG
-console.log('Environment variables:', {
-  host: process.env.MYSQLHOST,
-  port: process.env.MYSQLPORT,
-  user: process.env.MYSQLUSER,
-  database: process.env.MYSQLDATABASE
+// Test the connection on startup
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+  }
+  console.log('Successfully connected to database');
+  connection.release();
 });
 
 // Fungsi koneksi dengan retry
