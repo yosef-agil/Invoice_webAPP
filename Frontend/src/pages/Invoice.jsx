@@ -117,7 +117,6 @@ const Invoice = () => {
 
   return (
 
-    <Layout>
     
     <div>
 
@@ -360,7 +359,7 @@ const Invoice = () => {
       </div>
     </div>
 
-    </Layout>
+
   )
 };
 

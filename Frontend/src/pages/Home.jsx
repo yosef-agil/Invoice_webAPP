@@ -29,7 +29,6 @@ function Home() {
   if (data.length === 0) return <div className="p-8 text-center">No invoices found.</div>;
 
   return (
-    <Layout>
 
     <div>
       <div className="flex items-center justify-between px-6 py-4 border-b">
@@ -116,7 +115,6 @@ function Home() {
       </div>
     </div>
 
-    </Layout>
   );
 }
 

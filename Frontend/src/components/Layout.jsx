@@ -2,11 +2,12 @@ import Sidebar from './Sidebar';
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar />
-      <main className="flex-1 lg:ml-64 p-4 overflow-auto">
+    <div className="drawer lg:drawer-open">
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content flex flex-col">
         {children}
-      </main>
+      </div>
+      <Sidebar />
     </div>
   );
 };

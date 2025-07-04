@@ -7,23 +7,21 @@ import Settings from "./pages/Pengaturan";
 import Read from "./pages/read";
 import Sidebar from "./components/Sidebar";
 import PDFPreview from "./pages/PDFInvoice";
+import Layout from "./components/Layout";
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen">
-        <Sidebar />
-        <div className="lg:ml-64">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/invoice" element={<Invoice />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/paketan" element={<Paketan />} />
-            <Route path="/PDFPreview" element={<PDFPreview />} />
-            <Route path="/read/:id" element={<Read />} />
-          </Routes>
-        </div>
-      </div>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/invoice" element={<Invoice />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/paketan" element={<Paketan />} />
+          <Route path="/PDFPreview" element={<PDFPreview />} />
+          <Route path="/read/:id" element={<Read />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }
