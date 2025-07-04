@@ -5,29 +5,25 @@ require('dotenv').config();
 const cors = require('cors');
 const util = require("util");
 
+const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 8080;
 
-// Tambahkan error handling khusus untuk EADDRINUSE
+// Gunakan PORT yang disediakan Railway atau port acak jika tidak tersedia
+const PORT = process.env.PORT || 0; // 0 akan memilih port secara otomatis
+
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('MySQL Configuration:', {
-    host: process.env.MYSQLHOST,
-    port: process.env.MYSQLPORT,
-    user: process.env.MYSQLUSER,
-    database: process.env.MYSQLDATABASE
-  });
+  console.log(`Server running on port ${server.address().port}`);
 });
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`Port ${PORT} is already in use`);
-    // Coba port alternatif
-    const newPort = parseInt(PORT) + 1;
-    console.log(`Trying port ${newPort} instead`);
+// Handle error khusus untuk EADDRINUSE
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} sedang digunakan, mencoba port lain...`);
+    const newPort = PORT === 0 ? 8080 : parseInt(PORT) + 1;
     app.listen(newPort);
   } else {
-    console.error('Server error:', err);
+    console.error('Server error:', error);
+    process.exit(1);
   }
 });
 
