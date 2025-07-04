@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Trash2 } from 'lucide-react';
+import { Layout, Trash2 } from 'lucide-react';
 
 const Invoice = () => {
 
@@ -116,6 +116,8 @@ const Invoice = () => {
 
 
   return (
+
+    <Layout>
     
     <div>
 
@@ -357,6 +359,8 @@ const Invoice = () => {
         </div>
       </div>
     </div>
+
+    </Layout>
   )
 };
 

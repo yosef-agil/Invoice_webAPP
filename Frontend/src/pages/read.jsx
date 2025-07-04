@@ -36,6 +36,8 @@ function Read() {
   
 
   return (
+
+    <Layout>
     <div>
         <div className="createNewInvoice items-center border-b justify-between flex px-6 py-4">
             <h2 className="text-lg font-semibold">Detail Invoice</h2>
@@ -133,6 +135,7 @@ function Read() {
             </div>
         </div>
     </div>
+    </Layout>
 
   );
 }
