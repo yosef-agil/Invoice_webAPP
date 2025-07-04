@@ -15,27 +15,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Koneksi ke Database MySQL
-// const db = mysql.createConnection({
-//   host: "localhost",
-//   user: "root",
-//   password: "",
-//   database: "invoice_webapp",
-// });
-
-
-// const db = mysql.createConnection({
-//   host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
-//   user: process.env.MYSQLUSER || 'root',
-//   password: process.env.MYSQLPASSWORD || 'Jmm0xPCCn@FJIovRVCmavaCTjgsbbRZd',
-//   database: process.env.MYSQLDATABASE || 'railway',
-//   port: process.env.MYSQLPORT || 29457,
-//   connectTimeout: 60000, // Timeout 60 detik
-//   ssl: {
-//     rejectUnauthorized: false // Nonaktifkan untuk sementara
-//   }
-// });
-
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -44,40 +23,55 @@ const db = mysql.createPool({
   port: process.env.MYSQLPORT,
   waitForConnections: true,
   connectionLimit: 10,
+  queueLimit: 0,
   ssl: {
     rejectUnauthorized: false
   },
-  connectTimeout: 10000 // 10 second timeout
+  connectTimeout: 10000
 });
 
-// Test the connection on startup
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error('Database connection failed:', err);
-    process.exit(1);
+// Tambahkan health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Cek koneksi database
+    await db.promise().query('SELECT 1');
+    
+    // Cek koneksi server
+    res.status(200).json({
+      status: 'healthy',
+      database: 'connected',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'unhealthy',
+      error: err.message,
+      timestamp: new Date().toISOString()
+    });
   }
-  console.log('Successfully connected to database');
-  connection.release();
 });
 
-// Fungsi koneksi dengan retry
-function connectWithRetry(attempt = 1) {
-  db.connect(err => {
+// Modifikasi startup log
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('MySQL Configuration:', {
+    host: process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    user: process.env.MYSQLUSER,
+    database: process.env.MYSQLDATABASE
+  });
+  
+  // Test koneksi database saat startup
+  db.getConnection((err, connection) => {
     if (err) {
-      console.error(`Connection attempt ${attempt} failed:`, err.message);
-      if (attempt < 5) {
-        setTimeout(() => connectWithRetry(attempt + 1), 5000);
-      } else {
-        console.error('Giving up after 5 attempts');
-        process.exit(1);
-      }
+      console.error('❌ Database connection failed:', err.message);
     } else {
-      console.log('Successfully connected to database');
+      console.log('✅ Successfully connected to database');
+      connection.release();
     }
   });
-}
+});
 
-connectWithRetry();
 
 const query = util.promisify(db.query).bind(db);
 
