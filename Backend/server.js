@@ -6,7 +6,30 @@ const cors = require('cors');
 const util = require("util");
 
 const app = express();
-const PORT = process.env.PORT || 8080; // Pindahkan ke sini
+const PORT = process.env.PORT || 8080;
+
+// Tambahkan error handling khusus untuk EADDRINUSE
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('MySQL Configuration:', {
+    host: process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    user: process.env.MYSQLUSER,
+    database: process.env.MYSQLDATABASE
+  });
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+    // Coba port alternatif
+    const newPort = parseInt(PORT) + 1;
+    console.log(`Trying port ${newPort} instead`);
+    app.listen(newPort);
+  } else {
+    console.error('Server error:', err);
+  }
+});
 
 app.use(cors({
   origin: [
