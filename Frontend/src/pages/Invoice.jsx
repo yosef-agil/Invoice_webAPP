@@ -136,7 +136,7 @@ const Invoice = () => {
         {/* <Link to="/" className="btn btn-md">Cancel</Link> */}
       </div>
       <div className="container px-8 py-8">
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid col-2 grid-cols-2 gap-8">
 
           <div className="invoice-details p-6 border rounded-lg">
 
