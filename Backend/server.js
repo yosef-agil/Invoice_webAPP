@@ -1,11 +1,11 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require('mysql2/promise'); // 1. Gunakan mysql2/promise
+const mysql = require('mysql2/promise'); // Gunakan mysql2/promise
 const cors = require('cors');
 
 const app = express();
 
-// Konfigurasi CORS Anda sudah benar
+// Konfigurasi CORS
 app.use(cors({
   origin: [
     'https://frontendinv-production.up.railway.app',
@@ -16,10 +16,12 @@ app.use(cors({
   credentials: true
 }));
 
+// Handle preflight requests
 app.options('*', cors());
+
 app.use(express.json());
 
-// 2. Konfigurasi Pool Koneksi yang Disederhanakan dan Menggunakan Promise
+// Konfigurasi Pool Koneksi
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -29,6 +31,12 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  connectTimeout: 20000,
+  timezone: 'Z',
+  charset: 'utf8mb4',
 });
 
 // Cek koneksi database saat startup
@@ -41,6 +49,8 @@ async function checkDatabaseConnection() {
     connection.release();
   } catch (err) {
     console.error('❌ Database connection failed:', err);
+    // Tidak perlu retry loop di sini, karena ini hanya check awal.
+    // Error handler utama akan mencoba lagi jika koneksi terputus saat request.
   }
 }
 checkDatabaseConnection();
@@ -49,9 +59,10 @@ checkDatabaseConnection();
 app.get('/health', async (req, res) => {
   try {
     await db.query('SELECT 1');
-    res.status(200).json({ status: 'healthy', database: 'connected' });
+    res.status(200).json({ status: 'healthy', database: 'connected', timestamp: new Date().toISOString() });
   } catch (err) {
-    res.status(500).json({ status: 'unhealthy', error: err.message });
+    console.error('Health check failed:', err);
+    res.status(500).json({ status: 'unhealthy', error: err.message, timestamp: new Date().toISOString() });
   }
 });
 
@@ -60,7 +71,7 @@ app.get("/", (req, res) => {
   res.json("Backend service is running");
 });
 
-// 3. Endpoint /invoice yang Diperbaiki dengan async/await dan try/catch
+// Endpoint /invoice
 app.get('/invoice', async (req, res) => {
   try {
     const sql = `
@@ -82,19 +93,18 @@ app.get('/invoice', async (req, res) => {
           items: []
         };
       }
-      if (row.item_id) {
+      if (row.item_id) { // Hanya tambahkan item jika item_id ada (mencegah item null jika tidak ada join)
         invoices[row.invoice_id].items.push({ id: row.item_id, description: row.description });
       }
     });
 
     res.json(Object.values(invoices));
   } catch (err) {
-    console.error('Error fetching invoices:', err); // Log error di server
+    console.error('Error fetching invoices:', err);
     res.status(500).json({ error: 'Database error', message: err.message });
   }
 });
 
-// 4. Perbaiki juga endpoint lainnya agar konsisten
 app.get('/read/:id', async (req, res) => {
   try {
     const invoiceId = req.params.id;
@@ -107,7 +117,7 @@ app.get('/read/:id', async (req, res) => {
     invoice.items = itemsResults;
     return res.json(invoice);
   } catch (error) {
-    console.error(error);
+    console.error('Error reading invoice:', error);
     return res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
@@ -117,41 +127,62 @@ app.get("/paketan", async (req, res) => {
     const [data] = await db.query("SELECT * FROM price_list");
     return res.json(data);
   } catch (err) {
-    return res.status(500).json(err);
+    console.error('Error fetching price list:', err);
+    return res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 });
 
 app.post("/invoice", async (req, res) => {
   const { customer, date, due_date, note, items, discount, total, downpayment } = req.body;
-  const connection = await db.getConnection(); // Dapatkan koneksi untuk transaksi
+  let connection; // Deklarasikan di luar try agar bisa diakses di finally
 
   try {
+    connection = await db.getConnection(); // Dapatkan koneksi untuk transaksi
     await connection.beginTransaction();
+
     const [result] = await connection.query(
       "INSERT INTO invoice (customer, date, due_date, note, discount, total, downpayment) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [customer, date, due_date, note, discount, total, downpayment]
     );
     const invoiceId = result.insertId;
 
-    for (const item of items) {
-      await connection.query(
-        "INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)",
-        [invoiceId, item.description, item.price]
-      );
+    if (items && items.length > 0) {
+      for (const item of items) {
+        await connection.query(
+          "INSERT INTO invoice_items (invoice_id, description, price) VALUES (?, ?, ?)",
+          [invoiceId, item.description, item.price]
+        );
+      }
     }
+
     await connection.commit();
     res.status(201).json({ message: "Invoice created successfully", invoiceId });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error("Error processing invoice:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, message: "Failed to create invoice" });
   } finally {
-    connection.release(); // Selalu lepaskan koneksi
+    if (connection) {
+      connection.release(); // Selalu lepaskan koneksi
+    }
   }
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+// SERVER LISTENING
+const PORT = process.env.PORT; // Hanya gunakan port dari Railway ENV
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log('MySQL Host:', process.env.MYSQLHOST);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    db.end(); // Tutup pool koneksi database
+    process.exit(0);
+  });
 });
