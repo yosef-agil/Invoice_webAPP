@@ -1,31 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const mysql = require('mysql2');
-require('dotenv').config();
 const cors = require('cors');
 const util = require("util");
 
-const express = require('express');
 const app = express();
 
 // Gunakan PORT yang disediakan Railway atau port acak jika tidak tersedia
-const PORT = process.env.PORT || 0; // 0 akan memilih port secara otomatis
-
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${server.address().port}`);
-});
-
-// Handle error khusus untuk EADDRINUSE
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.log(`Port ${PORT} sedang digunakan, mencoba port lain...`);
-    const newPort = PORT === 0 ? 8080 : parseInt(PORT) + 1;
-    app.listen(newPort);
-  } else {
-    console.error('Server error:', error);
-    process.exit(1);
-  }
-});
+const PORT = process.env.PORT || 8080;
 
 app.use(cors({
   origin: [
@@ -50,13 +32,27 @@ const db = mysql.createPool({
   connectTimeout: 10000
 });
 
+// Test koneksi database saat startup
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error('❌ Database connection failed:', err.message);
+  } else {
+    console.log('✅ Successfully connected to database');
+    connection.release();
+  }
+});
+
+const query = util.promisify(db.query).bind(db);
+
+// API Endpoint utama
+app.get("/", (req, res) => {
+  return res.json("FROM BACKEND");
+});
+
 // Tambahkan health check endpoint
 app.get('/health', async (req, res) => {
   try {
-    // Cek koneksi database
     await db.promise().query('SELECT 1');
-    
-    // Cek koneksi server
     res.status(200).json({
       status: 'healthy',
       database: 'connected',
@@ -69,35 +65,6 @@ app.get('/health', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
-});
-
-// Modifikasi startup log
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('MySQL Configuration:', {
-    host: process.env.MYSQLHOST,
-    port: process.env.MYSQLPORT,
-    user: process.env.MYSQLUSER,
-    database: process.env.MYSQLDATABASE
-  });
-  
-  // Test koneksi database saat startup
-  db.getConnection((err, connection) => {
-    if (err) {
-      console.error('❌ Database connection failed:', err.message);
-    } else {
-      console.log('✅ Successfully connected to database');
-      connection.release();
-    }
-  });
-});
-
-
-const query = util.promisify(db.query).bind(db);
-
-// API Endpoint utama
-app.get("/", (req, res) => {
-  return res.json("FROM BACKEND");
 });
 
 // API untuk  menampilkan dari Invoice
@@ -228,9 +195,24 @@ app.post("/invoice", async (req, res) => {
 
 
 
-// Menjalankan server di port 8081
-// app.listen(8081, () => {
-//   console.log("Server is running on port 8081");
-// });
+// Hanya satu app.listen() di akhir file
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('MySQL Configuration:', {
+    host: process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    user: process.env.MYSQLUSER,
+    database: process.env.MYSQLDATABASE
+  });
+});
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Handle error khusus untuk EADDRINUSE
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} sedang digunakan, mencoba port ${PORT + 1}...`);
+    app.listen(PORT + 1);
+  } else {
+    console.error('Server error:', error);
+    process.exit(1);
+  }
+});
