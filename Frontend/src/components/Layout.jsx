@@ -1,12 +1,14 @@
 import Sidebar from './Sidebar';
 
-export const Layout = ({ children }) => {
+const Layout = ({ children }) => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-white">
       <Sidebar />
-      <div className="flex-1 lg:ml-64">
+      <main className="flex-1 lg:ml-64 p-4 overflow-auto">
         {children}
-      </div>
+      </main>
     </div>
   );
 };
+
+export default Layout;
