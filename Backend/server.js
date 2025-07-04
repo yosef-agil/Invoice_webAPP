@@ -50,14 +50,6 @@ connectWithRetry();
 
 const query = util.promisify(db.query).bind(db);
 
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed: " + err.stack);
-    return;
-  }
-  console.log("Connected to database.");
-});
-
 // API Endpoint utama
 app.get("/", (req, res) => {
   return res.json("FROM BACKEND");
