@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql");
-const cors = require("cors");
+const mysql = require('mysql2');
+require('dotenv').config();
 const util = require("util");
 
 const app = express();
@@ -23,16 +23,24 @@ app.use(express.json());
 // });
 
 
+// const db = mysql.createConnection({
+//   host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
+//   user: process.env.MYSQLUSER || 'root',
+//   password: process.env.MYSQLPASSWORD || 'Jmm0xPCCn@FJIovRVCmavaCTjgsbbRZd',
+//   database: process.env.MYSQLDATABASE || 'railway',
+//   port: process.env.MYSQLPORT || 29457,
+//   connectTimeout: 60000, // Timeout 60 detik
+//   ssl: {
+//     rejectUnauthorized: false // Nonaktifkan untuk sementara
+//   }
+// });
+
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
-  user: process.env.MYSQLUSER || 'root',
-  password: process.env.MYSQLPASSWORD || 'Jmm0xPCCn@FJIovRVCmavaCTjgsbbRZd',
-  database: process.env.MYSQLDATABASE || 'railway',
-  port: process.env.MYSQLPORT || 29457,
-  connectTimeout: 60000, // Timeout 60 detik
-  ssl: {
-    rejectUnauthorized: false // Nonaktifkan untuk sementara
-  }
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
 // Fungsi koneksi dengan retry
