@@ -16,8 +16,6 @@ app.use(express.json());
 //   database: "invoice_webapp",
 // });
 
-// server.js
-const mysql = require('mysql');
 
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST || 'interchange.proxy.rlwy.net',
