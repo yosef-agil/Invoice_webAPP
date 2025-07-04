@@ -60,6 +60,16 @@ db.getConnection((err, connection) => {
   connection.release();
 });
 
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('Environment variables:', {
+    host: process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    user: process.env.MYSQLUSER,
+    database: process.env.MYSQLDATABASE
+  });
+});
+
 // Fungsi koneksi dengan retry
 function connectWithRetry(attempt = 1) {
   db.connect(err => {
