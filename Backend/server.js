@@ -5,7 +5,13 @@ const cors = require("cors");
 const util = require("util");
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: [
+    'https://frontendinv-production.up.railway.app',
+    'http://localhost:5173'
+  ]
+}));
 app.use(express.json());
 
 // Koneksi ke Database MySQL
