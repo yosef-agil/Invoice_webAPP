@@ -117,13 +117,6 @@ app.get('/invoice', (req, res) => {
   });
 });
 
-app.use(cors({
-  origin: [
-    'https://frontendinv-production.up.railway.app',
-    'http://localhost:5173'
-  ]
-}));
-
 // to read the database for read function
 // :id to call the id from database
 app.get('/read/:id', async (req, res) => {
