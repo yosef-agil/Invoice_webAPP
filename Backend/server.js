@@ -21,13 +21,13 @@ app.use(cors({
 app.options('*', cors());
 
 // Additional headers middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://frontendinv-production.up.railway.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header('Access-Control-Allow-Origin', 'https://frontendinv-production.up.railway.app');
+//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//   res.header('Access-Control-Allow-Credentials', 'true');
+//   next();
+// });
 
 app.use(express.json());
 
@@ -259,7 +259,7 @@ app.post("/invoice", async (req, res) => {
 
 
 // Server initialization with port handling
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
