@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "interchange.proxy.rlwy.net",
+            "port": 29457,
+            "driver": "MySQL",
+            "name": "invoice-data",
+            "database": "railway",
+            "username": "root"
+        }
+    ]
+}
