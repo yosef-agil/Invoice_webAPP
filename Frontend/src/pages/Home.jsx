@@ -31,7 +31,8 @@ function Home() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <div className="flex items-center justify-between px-6 py-4 border-b">
+
+      <div className="bg-white border-b shadow-sm sticky top-0 z-40">
         <h2 className="text-lg font-semibold">Home</h2>
       </div>   
 
