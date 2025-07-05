@@ -2,19 +2,19 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {},
   },
-  plugins: [
-    require('daisyui'),
-  ],
+  plugins: [require("daisyui")],
   daisyui: {
     themes: ["light"],
-  },
-  future: {
-    disableColorOpacityUtilitiesByDefault: true,
-  },
+    darkTheme: "light",
+    base: true,
+    styled: true,
+    utils: true,
+    logs: true,
+    themeRoot: ":root",
+  }
 }
-

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Invoice from "./pages/Invoice";
@@ -10,6 +10,12 @@ import PDFPreview from "./pages/PDFInvoice";
 import Layout from "./components/Layout";
 
 function App() {
+  useEffect(() => {
+    // Force light theme
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.style.colorScheme = 'light';
+  }, []);
+
   return (
     <Router>
       <Layout>

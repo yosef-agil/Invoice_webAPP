@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { Trash } from "lucide-react";
 
 function Home() {
   const [data, setData] = useState([]);
@@ -29,17 +30,16 @@ function Home() {
   if (data.length === 0) return <div className="p-8 text-center">No invoices found.</div>;
 
   return (
-
     <div>
       <div className="flex items-center justify-between px-6 py-4 border-b">
         <h2 className="text-lg font-semibold">Home</h2>
       </div>   
 
       <div className="p-4 md:p-8">
-        <div className="overflow-x-auto">
-          {/* Desktop Table */}
-          <table className="hidden w-full md:table border rounded-lg overflow-hidden">
-            <thead className="bg-gray-100">
+        {/* Desktop Table (hidden on mobile) */}
+        <div className="hidden md:block overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+          <table className="table w-full">
+            <thead>
               <tr>
                 <th className="px-4 py-3 text-left">ID</th>
                 <th className="px-4 py-3 text-left">Customer</th>
@@ -49,72 +49,81 @@ function Home() {
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody>
               {data.map((invoice, index) => (
                 <tr key={invoice.id || index} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">{invoice.inv_id}</td>
-                  <td className="px-4 py-3">{invoice.customer}</td>
-                  <td className="px-4 py-3">
+                  <td>{invoice.inv_id}</td>
+                  <td>{invoice.customer}</td>
+                  <td>
                     {invoice?.due_date 
                       ? new Date(invoice.due_date).toLocaleDateString("id-ID") 
                       : "N/A"}
                   </td>
-                  <td className="px-4 py-3">Rp {invoice.downpayment?.toLocaleString('id-ID')}</td>
-                  <td className="px-4 py-3">Rp {invoice.total?.toLocaleString('id-ID')}</td>
-                  <td className="px-4 py-3">
+                  <td>Rp {invoice.downpayment?.toLocaleString('id-ID')}</td>
+                  <td>Rp {invoice.total?.toLocaleString('id-ID')}</td>
+                  <td>
                     <div className="flex gap-2">
-                      <Link to={`/read/${invoice.id}`} className="btn btn-sm btn-outline">View</Link>
-                      <Link to={`/edit/${invoice.id}`} className="btn btn-sm btn-outline">Edit</Link>
-                      <button className="btn btn-sm btn-outline btn-error">Delete</button>
+                      <Link to={`/read/${invoice.id}`} className="btn btn-sm">View</Link>
+                      <Link to={`/edit/${invoice.id}`} className="btn btn-sm">Edit</Link>
+                      <Link to={`/delete/${invoice.id}`} className="btn btn-sm btn-error"> 
+                        <Trash color="#ffffff" className="w-4 h-4"/> 
+                      </Link>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
 
-          {/* Mobile Cards */}
-          <div className="md:hidden space-y-4">
-            {data.map((invoice, index) => (
-              <div key={invoice.id || index} className="border rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">ID</p>
-                    <p>{invoice.inv_id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Customer</p>
-                    <p>{invoice.customer}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Due Date</p>
-                    <p>
-                      {invoice?.due_date 
-                        ? new Date(invoice.due_date).toLocaleDateString("id-ID") 
-                        : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Down Payment</p>
-                    <p>Rp {invoice.downpayment?.toLocaleString('id-ID')}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Total</p>
-                    <p>Rp {invoice.total?.toLocaleString('id-ID')}</p>
-                  </div>
+        {/* Mobile Cards (visible only on mobile) */}
+        <div className="md:hidden space-y-4">
+          {data.map((invoice, index) => (
+            <div key={invoice.id || index} className="border rounded-lg p-4 bg-base-100">
+              <div className="grid grid-cols-2 gap-4 ">
+                
+                <div className="col-span-2">
+                  <p className="text-sm font-medium text-gray-500">ID</p>
+                  <p className="font-medium">{invoice.inv_id}</p>
                 </div>
-                <div className="flex gap-2 mt-4">
-                  <Link to={`/read/${invoice.id}`} className="btn btn-sm btn-outline flex-1">View</Link>
-                  <Link to={`/edit/${invoice.id}`} className="btn btn-sm btn-outline flex-1">Edit</Link>
-                  <button className="btn btn-sm btn-outline btn-error flex-1">Delete</button>
+                
+                <div className="col-span-2">
+                  <p className="text-sm font-medium text-gray-500">Customer</p>
+                  <p>{invoice.customer}</p>
                 </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Due Date</p>
+                  <p>
+                    {invoice?.due_date 
+                      ? new Date(invoice.due_date).toLocaleDateString("id-ID") 
+                      : "N/A"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Down Payment</p>
+                  <p>Rp {invoice.downpayment?.toLocaleString('id-ID')}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total</p>
+                  <p className="font-semibold">Rp {invoice.total?.toLocaleString('id-ID')}</p>
+                </div>
+
               </div>
-            ))}
-          </div>
+              <div className="flex gap-2 mt-4 justify-end">
+                <Link to={`/read/${invoice.id}`} className="btn btn-m ">View</Link>
+                <Link to={`/edit/${invoice.id}`} className="btn btn-m ">Edit</Link>
+                <Link to={`/delete/${invoice.id}`} className="btn btn-m btn-error">
+                  <Trash color="#ffffff" className="w-4 h-4"/>
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
-
   );
 }
 

@@ -2,21 +2,20 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Layout, Trash2 } from 'lucide-react';
+import { Layout, Trash2, Eye, EyeOff } from 'lucide-react';
 
 const Invoice = () => {
-
   const [values, setValues] = useState({
     customer: '',
     date: new Date().toISOString().split('T')[0],
     due_date: '',
     note: '',
-    items: [], // Tambahkan items ke dalam state
+    items: [],
   });
 
-
   const [popupMessage, setPopupMessage] = useState("");
-  const [popupType, setPopupType] = useState(""); // "success" atau "error"
+  const [popupType, setPopupType] = useState("");
+  const [showPreview, setShowPreview] = useState(false); // State untuk toggle preview di mobile
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [displayValues, setDisplayValues] = useState({});
@@ -25,7 +24,6 @@ const Invoice = () => {
   const downpayment = Number(values.downpayment) || 0;
   const discountAmount = (subtotal * (values.discount || 0)) / 100;
   const total = subtotal - downpayment - discountAmount;
-  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,7 +32,7 @@ const Invoice = () => {
       ...values,
       downpayment: Number(values.downpayment) || 0,
       discount: values.discount || 0,
-      total: total, // Pastikan total dikirim
+      total: total,
     };
   
     axios
@@ -57,9 +55,7 @@ const Invoice = () => {
         }, 3000);
       });
   };
-  
 
-  // Function to delete and new items button
   const addItem = () => {
     setValues(prevValues => ({
       ...prevValues,
@@ -74,20 +70,17 @@ const Invoice = () => {
     }));
   };
 
-  // when submit the invoice
   const handleItemChange = (index, field, value) => {
     if (field === "price") {
-        let rawValue = value.replace(/\D/g, ""); // Hanya angka
-        let formattedValue = formatRupiah(rawValue); // Format angka dengan titik
+        let rawValue = value.replace(/\D/g, "");
+        let formattedValue = formatRupiah(rawValue);
 
-        // Simpan nilai asli ke values
         setValues(prevValues => {
             const newItems = [...prevValues.items];
-            newItems[index][field] = rawValue; // Simpan angka mentah ke state
+            newItems[index][field] = rawValue;
             return { ...prevValues, items: newItems };
         });
 
-        // Simpan nilai tampilan di displayValues
         setDisplayValues(prevDisplay => ({
             ...prevDisplay,
             [index]: formattedValue
@@ -99,30 +92,23 @@ const Invoice = () => {
             return { ...prevValues, items: newItems };
         });
     }
-};
+  };
 
-
-  // titik otomatis
   const formatRupiah = (value) => {
-    if (!value) return ""; // Jika value undefined atau null, kembalikan string kosong
-    let numberString = value.toString().replace(/\D/g, ""); // Konversi ke string dan hapus non-digit
+    if (!value) return "";
+    let numberString = value.toString().replace(/\D/g, "");
     return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  // titik di preview
   const formatNumber = (num) => {
     return new Intl.NumberFormat("id-ID").format(num);
   };
 
-
   return (
-
-    
-    <div>
-
+    <div className="min-h-screen bg-gray-50">
       {popupMessage && (
         <div
-          className={`fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg text-white ${
+          className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white ${
             popupType === "success" ? "bg-green-500" : "bg-red-500"
           }`}
         >
@@ -130,237 +116,262 @@ const Invoice = () => {
         </div>
       )}
 
-
-      <div className="createNewInvoice items-center border-b justify-between flex px-6 py-4">
-        <h2 className="text-lg font-semibold">Create New Invoice</h2>
-        {/* <Link to="/" className="btn btn-md">Cancel</Link> */}
+      {/* Header */}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-40">
+        <div className="px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Create New Invoice</h2>
+            
+            {/* Toggle Preview Button - Hanya tampil di mobile */}
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="lg:hidden flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              {showPreview ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="container px-8 py-8">
-        <div className="grid col-2 grid-cols-2 gap-8">
 
-          <div className="invoice-details p-6 border rounded-lg">
-
-            <form onSubmit={handleSubmit}>
-            <div className="form-package divide-y grid gap-4">
-
-              <div className="bill-to">
-                <h2 className="font-semibold pb-4">Bill to</h2>
-                <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Customer name</span>
-                      </div>
-                      
-                      <input type="text" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, customer: e.target.value})}
-                      />
-                  </label>
-
-                  {/* <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Date</span>
-                      </div>
-                      
-                      <input type="date" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, date: e.target.value})}
-                      />
-                  </label> */}
-
-                  <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Due date payment</span>
-                      </div>
-                      
-                      <input type="date" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, due_date: e.target.value})}
-                      />
-                  </label>
-              </div>
-
-              <div className="invoice-items pt-4">
-                <h2 className="font-semibold pb-4">Invoice Details</h2>
-
-                <div className="items-wrap p-4 bg-gray-50 border rounded-md">
-                {values.items.map((item, index) => (
-
-                <div key={index} className="flex gap-4 items-end mb-4">
-                  <label className="form-control w-full">
-                        <div className="label">
-                            <span className="label-text">Description</span>
-                        </div>
-                        
-                        <input type="text" placeholder="Type here" value={item.description} className="input input-bordered w-full " 
-                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        />
-                  </label>
-
-
-                  <label className="form-control w-full">
-                        <div className="label">
-                            <span className="label-text">Price</span>
-                        </div>
-                        
-                        <input type="text" placeholder="Type here" value={item.price} className="input input-bordered w-full " 
-                            onChange={(e) => handleItemChange(index, "price", e.target.value)}
-                        />
-                  </label>
-                  <button onClick={() => removeItem(index)} className="btn btn-error btn-md"><Trash2 size={20} color="#ffffff"/></button>
-                </div>
-
-                ))}
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault(); // Cegah reload halaman
-                      addItem();
-                    }} 
-                    className="btn btn-sm btn-neutral"
-                  >
-                   Add Item
-                  </button>
-                </div>
-              </div>
-
-              <div className="discount">
-                  <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Discount</span>
-                      </div>
-                      
-                      <input type="number" placeholder="Enter discount (e.g. 10)" value={values.discount} className="input input-bordered w-full " 
-                          onChange={(e) => setValues({ ...values, discount: e.target.value })}
-                      />
-                  </label>
-
-                  <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Down Payment</span>
-                      </div>
-                      
+      {/* Main Content */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+          
+          {/* Form Section */}
+          <div className={`${showPreview ? 'hidden lg:block' : 'block'}`}>
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                
+                {/* Bill To Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b">Bill to</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Customer name
+                      </label>
                       <input 
                         type="text" 
-                        placeholder="Enter down payment (e.g. 50.000)" 
-                        value={formatRupiah(values.downpayment)} 
-                        className="input input-bordered w-full" 
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/\D/g, "");
-                          setValues({ ...values, downpayment: rawValue });
-                        }}
+                        placeholder="Enter customer name" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        onChange={e => setValues({...values, customer: e.target.value})}
                       />
-                  </label>
-              </div>
+                    </div>
 
-              <div className="notes">
-                  <label className="form-control w-full">
-                      <div className="label">
-                          <span className="label-text">Notes</span>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Due date payment
+                      </label>
+                      <input 
+                        type="date" 
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        onChange={e => setValues({...values, due_date: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Invoice Items Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b">Invoice Details</h3>
+                  
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                    {values.items.map((item, index) => (
+                      <div key={index} className="bg-white p-3 rounded-lg border space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium text-gray-700">Item {index + 1}</span>
+                          <button 
+                            type="button"
+                            onClick={() => removeItem(index)} 
+                            className="p-1 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Description
+                            </label>
+                            <input 
+                              type="text" 
+                              placeholder="Enter description" 
+                              value={item.description} 
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                              onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Price
+                            </label>
+                            <input 
+                              type="text" 
+                              placeholder="Enter price" 
+                              value={displayValues[index] || item.price} 
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm"
+                              onChange={(e) => handleItemChange(index, "price", e.target.value)}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      
-                      <input type="text" placeholder="Type here" className="input input-bordered w-full " 
-                          onChange={e => setValues({...values, note: e.target.value})}
-                      />
+                    ))}
+                    
+                    <button 
+                      type="button"
+                      onClick={addItem}
+                      className="w-full py-2 px-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium"
+                    >
+                      Add Item
+                    </button>
+                  </div>
+                </div>
+
+                {/* Discount and Payment Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Discount (%)
+                    </label>
+                    <input 
+                      type="number" 
+                      placeholder="Enter discount" 
+                      value={values.discount} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      onChange={(e) => setValues({ ...values, discount: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Down Payment
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter down payment" 
+                      value={formatRupiah(values.downpayment)} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, "");
+                        setValues({ ...values, downpayment: rawValue });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes Section */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
                   </label>
-              </div>
+                  <textarea 
+                    placeholder="Enter additional notes" 
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                    onChange={e => setValues({...values, note: e.target.value})}
+                  />
+                </div>
 
-                <button className="btn btn-md btn-primary text-white mt-6">Save</button>
+                {/* Submit Button */}
+                <button 
+                  type="submit"
+                  className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Save Invoice
+                </button>
+              </form>
             </div>
-
-            </form>
-
           </div>
 
-          {/* NOTE: This code for preview the Invoice */}
-          <div className="Preview">
-            <div className="p-6 border rounded-lg bg-gray-50 shadow">
-              <div className="header flex justify-between items-center w-full pb-6">
-                <h2 className="font-semibold text-lg">Invoice Preview</h2>
+          {/* Preview Section */}
+          <div className={`${showPreview ? 'block' : 'hidden lg:block'}`}>
+            <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 sticky top-24">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Invoice Preview</h3>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                >
+                  <EyeOff size={20} />
+                </button>
               </div>
 
-              <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-lg font-bold">Invoice</h3>
-                <p className="text-sm text-gray-500">Due date: {values.due_date || "dd/mm/yyyy"}</p>
+              <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900">Invoice</h4>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Due date: {values.due_date || "Not set"}
+                    </p>
+                  </div>
+                </div>
 
-                <div className="mt-4">
-                  <p className="text-md font-semibold">Bill to:</p>
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-gray-900">Bill to:</p>
                   <p className="text-gray-700">{values.customer || "Customer Name"}</p>
                 </div>
 
-                <div className="mt-4 overflow-x-auto">
-
-                  <p className="text-md font-semibold">Invoice Items:</p>
-                  <div className="wrap-table rounded-md overflow-hidden border border-gray-200">
-                    <table className="table-auto rounded-lg w-full">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="w-3/4 px-4 py-2">Items</th>
-                          <th className="w-1/4 px-4 py-2 text-left">Price</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-300">
-                        {values.items.length > 0 ? (
-                          values.items.map((item, index) => (
-                            <tr key={index}>
-                              <td className="px-4 py-2">{item.description || "No description"}</td>
-                              <td className="w-1/4 px-4 py-2 text-left whitespace-nowrap">
-                                Rp{formatNumber(item.price) || "0.00"}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="2" className="text-gray-700 text-center py-2">No items added</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className=" pt-4">
-                    <div className="flex justify-between text-sm">
-                      <span>Subtotal:</span>
-                      <span className="font-medium">Rp{formatNumber(subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Down Payment:</span>
-                      <span className="font-medium">Rp{formatNumber(downpayment)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-red-500">
-                      <span>Discount ({values.discount || 0}%):</span>
-                      <span>- Rp{formatNumber(discountAmount)}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-semibold mt-2">
-                      <span>Total:</span>
-                      <span>Rp{formatNumber(total)}</span>
-                    </div>
-                  </div>
-
-
-                  {/* {values.items.length > 0 ? (
-                    <ul className="list-disc pl-5">
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold text-gray-900">Invoice Items:</p>
+                  
+                  {values.items.length > 0 ? (
+                    <div className="space-y-2">
                       {values.items.map((item, index) => (
-                        <li key={index}>
-                          {item.description || "No description"} - Rp{formatNumber(item.price) || "0.00"}
-                        </li>
+                        <div key={index} className="flex justify-between items-center py-2 px-3 bg-white rounded border text-sm">
+                          <span className="flex-1 text-gray-700">
+                            {item.description || "No description"}
+                          </span>
+                          <span className="font-medium text-gray-900 ml-2">
+                            Rp{formatNumber(item.price) || "0"}
+                          </span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   ) : (
-                    <p className="text-gray-700">No items added</p>
-                  )} */}
-
+                    <div className="text-center py-8 text-gray-500 bg-white rounded border">
+                      <p className="text-sm">No items added yet</p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-4">
-                  <p className="text-md font-semibold">Notes:</p>
-                  <p className="text-gray-700 italic">{values.note || "No additional notes"}</p>
+                {/* Totals */}
+                <div className="space-y-2 pt-4 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-medium">Rp{formatNumber(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Down Payment:</span>
+                    <span className="font-medium">Rp{formatNumber(downpayment)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-red-600">
+                    <span>Discount ({values.discount || 0}%):</span>
+                    <span>- Rp{formatNumber(discountAmount)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold pt-2 border-t">
+                    <span>Total:</span>
+                    <span>Rp{formatNumber(total)}</span>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2 pt-4">
+                  <p className="text-sm font-semibold text-gray-900">Notes:</p>
+                  <p className="text-sm text-gray-700 italic">
+                    {values.note || "No additional notes"}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-
-
-  )
+  );
 };
 
 export default Invoice;

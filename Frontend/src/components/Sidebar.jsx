@@ -1,69 +1,105 @@
-import { Link } from "react-router-dom";
-import { Package2, ReceiptText, Home, Settings } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Package2, ReceiptText, Home, Settings, Inbox } from "lucide-react";
 
 const Sidebar = () => {
+  const location = useLocation();
+  
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <>
-      {/* Mobile toggle button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <label 
-          htmlFor="my-drawer" 
-          className="btn btn-circle btn-ghost drawer-button"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-6 w-6" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth="2" 
-              d="M4 6h16M4 12h16M4 18h16" 
-            />
-          </svg>
-        </label>
-      </div>
-
-      {/* Sidebar */}
-      <div className="drawer-side z-40">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block drawer-side z-40">
         <label 
           htmlFor="my-drawer" 
           aria-label="close sidebar" 
           className="drawer-overlay"
         ></label>
-        <div className="menu p-4 w-64 min-h-full bg-base-100 text-base-content">
-          {/* Konten sidebar */}
+        <div className="menu p-4 w-64 border-r min-h-full bg-base-100 text-base-content">
           <div className="mb-4 p-2">
             <h1 className="text-xl font-bold">Invoice App</h1>
           </div>
           <li>
-            <Link to="/" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100">
+            <Link 
+              to="/" 
+              className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 ${
+                isActive('/') ? 'bg-blue-50 text-blue-600' : ''
+              }`}
+            >
               <Home className="w-5 h-5" />
               <span>Home</span>
             </Link>
           </li>
+          <li>
+            <Link 
+              to="/invoice" 
+              className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 ${
+                isActive('/invoice') ? 'bg-blue-50 text-blue-600' : ''
+              }`}
+            >
+              <ReceiptText className="w-5 h-5" />
+              <span>Invoice</span>
+            </Link>
+          </li>
+          {/* <li>
+            <Link 
+              to="/paketan" 
+              className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 ${
+                isActive('/paketan') ? 'bg-blue-50 text-blue-600' : ''
+              }`}
+            >
+              <Package2 className="w-5 h-5" />
+              <span>Pricelist</span>
+            </Link>
+          </li> */}
+          <li>
+            <Link 
+              to="/settings" 
+              className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 ${
+                isActive('/settings') ? 'bg-blue-50 text-blue-600' : ''
+              }`}
+            >
+              <Settings className="w-5 h-5" />
+              <span>Settings</span>
+            </Link>
+          </li>
+        </div>
+      </div>
 
-            <li>
-              <Link to="/invoice" className="flex items-center py-2 px-4 rounded-lg hover:bg-gray-100">
-                <ReceiptText className="w-5 h-5 mr-3" />
-                <span>Invoice</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/paketan" className="flex items-center py-2 px-4 rounded-lg hover:bg-gray-100">
-                <Package2 className="w-5 h-5 mr-3" />
-                <span>Pricelist</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/settings" className="flex items-center py-2 px-4 rounded-lg hover:bg-gray-100">
-                <Settings className="w-5 h-5 mr-3" />
-                <span>Settings</span>
-              </Link>
-            </li>
+      {/* Mobile Bottom Dock */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          <Link 
+            to="/" 
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] ${
+              isActive('/') ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <Home className="w-6 h-6" />
+            <span className="text-xs font-medium">Home</span>
+          </Link>
+          
+          <Link 
+            to="/invoice" 
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] ${
+              isActive('/invoice') ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <ReceiptText size={24} />
+            <span className="text-xs font-medium">Invoice</span>
+          </Link>
+          
+          <Link 
+            to="/settings" 
+            className={`flex flex-col items-center gap-1 p-2 rounded-lg min-w-[60px] ${
+              isActive('/settings') ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <Settings className="w-6 h-6" />
+            <span className="text-xs font-medium">Settings</span>
+          </Link>
         </div>
       </div>
     </>
@@ -71,4 +107,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
