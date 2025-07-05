@@ -30,7 +30,7 @@ function Home() {
   if (data.length === 0) return <div className="p-8 text-center">No invoices found.</div>;
 
   return (
-    <div>
+    <div className='min-h-screen bg-gray-50'>
       <div className="flex items-center justify-between px-6 py-4 border-b">
         <h2 className="text-lg font-semibold">Home</h2>
       </div>   
@@ -81,7 +81,7 @@ function Home() {
           {data.map((invoice, index) => (
             <div key={invoice.id || index} className="border rounded-lg p-4 bg-base-100">
               <div className="grid grid-cols-2 gap-4 ">
-                
+
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-gray-500">ID</p>
                   <p className="font-medium">{invoice.inv_id}</p>
