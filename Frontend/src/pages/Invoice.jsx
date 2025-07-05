@@ -100,10 +100,20 @@ const Invoice = () => {
   const handleDateChange = (e) => {
     const dateValue = e.target.value;
     console.log('Date value:', dateValue); // Debug log
-    setValues(prevValues => ({
-      ...prevValues,
-      due_date: dateValue
-    }));
+    
+    // Validasi format date
+    if (dateValue && !isNaN(Date.parse(dateValue))) {
+      setValues(prevValues => ({
+        ...prevValues,
+        due_date: dateValue
+      }));
+    } else if (dateValue === '') {
+      // Handle empty value
+      setValues(prevValues => ({
+        ...prevValues,
+        due_date: ''
+      }));
+    }
   };
 
   const formatRupiah = (value) => {
@@ -177,14 +187,25 @@ const Invoice = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Due date payment
                       </label>
-                        <input 
-                          type="text" 
-                          placeholder="YYYY-MM-DD"
-                          value={values.due_date}
-                          pattern="\d{4}-\d{2}-\d{2}"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                          onChange={handleDateChange}
-                        />
+                      <input 
+                        type="date" 
+                        value={values.due_date}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        onChange={handleDateChange}
+                        onFocus={(e) => {
+                          // Force show date picker on mobile
+                          if (e.target.type !== 'date') {
+                            e.target.type = 'date';
+                          }
+                        }}
+                        style={{
+                          colorScheme: 'light',
+                          WebkitAppearance: 'none',
+                          appearance: 'none'
+                        }}
+                        placeholder="Select due date"
+                      />
                     </div>
                   </div>
                 </div>
