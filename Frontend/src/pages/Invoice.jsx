@@ -11,11 +11,13 @@ const Invoice = () => {
     due_date: '',
     note: '',
     items: [],
+    discount: '',
+    downpayment: ''
   });
 
   const [popupMessage, setPopupMessage] = useState("");
   const [popupType, setPopupType] = useState("");
-  const [showPreview, setShowPreview] = useState(false); // State untuk toggle preview di mobile
+  const [showPreview, setShowPreview] = useState(false);
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [displayValues, setDisplayValues] = useState({});
@@ -94,6 +96,16 @@ const Invoice = () => {
     }
   };
 
+  // Handler khusus untuk input date
+  const handleDateChange = (e) => {
+    const dateValue = e.target.value;
+    console.log('Date value:', dateValue); // Debug log
+    setValues(prevValues => ({
+      ...prevValues,
+      due_date: dateValue
+    }));
+  };
+
   const formatRupiah = (value) => {
     if (!value) return "";
     let numberString = value.toString().replace(/\D/g, "");
@@ -155,6 +167,7 @@ const Invoice = () => {
                       <input 
                         type="text" 
                         placeholder="Enter customer name" 
+                        value={values.customer}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         onChange={e => setValues({...values, customer: e.target.value})}
                       />
@@ -166,8 +179,14 @@ const Invoice = () => {
                       </label>
                       <input 
                         type="date" 
+                        value={values.due_date}
+                        min={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        onChange={e => setValues({...values, due_date: e.target.value})}
+                        onChange={handleDateChange}
+                        style={{
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'textfield'
+                        }}
                       />
                     </div>
                   </div>
@@ -241,6 +260,8 @@ const Invoice = () => {
                       type="number" 
                       placeholder="Enter discount" 
                       value={values.discount} 
+                      min="0"
+                      max="100"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       onChange={(e) => setValues({ ...values, discount: e.target.value })}
                     />
@@ -271,6 +292,7 @@ const Invoice = () => {
                   <textarea 
                     placeholder="Enter additional notes" 
                     rows="3"
+                    value={values.note}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
                     onChange={e => setValues({...values, note: e.target.value})}
                   />
