@@ -102,15 +102,16 @@ function Home() {
                   </p>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Down Payment</p>
-                  <p>Rp {invoice.downpayment?.toLocaleString('id-ID')}</p>
-                </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Total</p>
-                  <p className="font-semibold">Rp {invoice.total?.toLocaleString('id-ID')}</p>
-                </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Down Payment</p>
+                    <p>Rp {invoice.downpayment?.toLocaleString('id-ID', {maximumFractionDigits: 0})}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Total</p>
+                    <p className="font-semibold">Rp {invoice.total?.toLocaleString('id-ID', {maximumFractionDigits: 0})}</p>
+                  </div>
 
               </div>
               <div className="flex gap-2 mt-4 justify-end">
